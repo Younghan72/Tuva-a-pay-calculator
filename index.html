@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TUVA 급여 계산기</title>
+    <style>
+        :root {
+            --primary: #007AFF;       /* System Blue */
+            --success: #34C759;       /* System Green */
+            --danger: #FF3B30;        /* System Red */
+            --bg-color: #F2F2F7;      /* iOS Grouped Background */
+            --card-bg: #FFFFFF;
+            --text-main: #1C1C1E;
+            --text-sub: #8E8E93;
+            --border-color: #E5E5EA;
+            --radius: 20px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Pretendard", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin: 0 0 8px 0;
+            letter-spacing: -0.5px;
+        }
+        .subtitle {
+            color: var(--text-sub);
+            font-size: 15px;
+            font-weight: 400;
+            margin: 0;
+        }
+
+        /* Section Cards */
+        .section-card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.04);
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+
+        /* Section Header */
+        .card-header {
+            padding: 20px 24px 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .reset-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 13px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        .reset-btn:hover {
+            color: var(--danger);
+            background-color: rgba(255, 59, 48, 0.1);
+        }
+
+        /* List Style Inputs */
+        .input-list {
+            padding: 0 24px;
+        }
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .input-row:last-child {
+            border-bottom: none;
+        }
+        
+        .label-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .label-main {
+            font-size: 15px;
+            font-weight: 500;
+        }
+        .label-sub {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        /* Inputs */
+        input[type="number"] {
+            border: none;
+            background: transparent;
+            text-align: right;
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--primary);
+            width: 120px;
+            padding: 4px 0;
+            outline: none;
+            font-family: inherit;
+        }
+        input[type="number"]::placeholder {
+            color: #D1D1D6;
+            font-weight: 400;
+        }
+        input[type="number"]:focus {
+            color: #000;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 12px;
+            background-color: #F2F2F7;
+            color: #636366;
+            font-weight: 600;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+        .badge.required {
+            background-color: #FFDAD8;
+            color: #D92D20;
+        }
+
+        /* Result Area - Pretty Light Green Style */
+        .result-card {
+            /* Soft Minty Gradient */
+            background: linear-gradient(135deg, #5DDE8A 0%, #30B0C7 100%);
+            /* Fallback / Alternative Soft Green:
+               background: linear-gradient(135deg, #81FBB8 0%, #28C76F 100%); */
+            color: white;
+            padding: 30px 24px;
+            /* Soft Green Shadow */
+            box-shadow: 0 10px 30px rgba(93, 222, 138, 0.4);
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 15px;
+            opacity: 0.95;
+            color: white;
+        }
+        .result-row.total {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.3);
+            font-size: 18px;
+            font-weight: 600;
+            opacity: 1;
+            margin-bottom: 0;
+        }
+        .big-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -1px;
+        }
+        .highlight {
+            color: #fff;
+            font-weight: 700;
+        }
+        
+        .csat-subtext {
+            font-size: 13px;
+            font-weight: 600;
+            color: #FFF9C4; /* Very pale yellow for accent */
+            margin-top: 4px;
+        }
+
+        /* Incentive Grid */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            padding: 0 24px 20px 24px;
+        }
+        @media (max-width: 600px) {
+            .grid-2 { grid-template-columns: 1fr; gap: 0; }
+            .mobile-divider { border-bottom: 1px solid var(--border-color); margin-bottom: 20px; padding-bottom: 20px; }
+        }
+        
+        .sub-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>TUVA 급여 계산기</h1>
+            <p class="subtitle">월 급여 및 인센티브 통합 시뮬레이션</p>
+        </header>
+
+        <div class="section-card">
+            <div class="card-header">
+                <div class="card-title">기본 급여</div>
+                <button class="reset-btn" onclick="resetSalary()">초기화</button>
+            </div>
+            <div class="input-list">
+                <div class="input-row">
+                    <div class="label-group">
+                        <span class="label-main">연봉 (세전)</span>
+                        <span class="label-sub" id="monthly_salary_preview">월 0 원</span>
+                    </div>
+                    <input type="number" id="annual_salary" placeholder="입력" oninput="calculate()">
+                </div>
+                <div class="input-row">
+                    <div class="label-group">
+                        <span class="label-main">연장 근무 수당</span>
+                        <span class="label-sub">이번 달 예상액</span>
+                    </div>
+                    <input type="number" id="overtime_pay" value="0" oninput="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="card-header" style="margin-bottom: 10px;">
+                <div class="card-title">인센티브 실적</div>
+                <button class="reset-btn" onclick="resetIncentives()">초기화</button>
+            </div>
+            
+            <div class="grid-2">
+                <div class="mobile-divider">
+                    <span class="sub-title" style="color:#007AFF;">Mac</span>
+                    <div class="input-row">
+                        <span class="label-main">유상 수리 <span class="badge">21점</span></span>
+                        <input type="number" id="mac_owr" value="0" oninput="calculate()">
+                    </div>
+                    <div class="input-row">
+                        <span class="label-main">무상 수리 <span class="badge">10점</span></span>
+                        <input type="number" id="mac_iwr" value="0" oninput="calculate()">
+                    </div>
+                    <div class="input-row">
+                        <span class="label-main">무상 상담 <span class="badge">1.5점</span></span>
+                        <input type="number" id="mac_ncc" value="0" oninput="calculate()">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-group">
+                            <span class="label-main">유상 상담 매출</span>
+                            <span class="label-sub">금액 입력 (÷5000)</span>
+                        </div>
+                        <input type="number" id="mac_sr_amount" value="0" oninput="calculate()">
+                    </div>
+                </div>
+
+                <div>
+                    <span class="sub-title">iPhone</span>
+                    <div class="input-row">
+                        <span class="label-main">유상 수리 <span class="badge">7점</span></span>
+                        <input type="number" id="others_owr" value="0" oninput="calculate()">
+                    </div>
+                    <div class="input-row">
+                        <span class="label-main">무상 수리 <span class="badge">3점</span></span>
+                        <input type="number" id="others_iwr" value="0" oninput="calculate()">
+                    </div>
+                    <div class="input-row">
+                        <span class="label-main">무상 상담 <span class="badge">0.5점</span></span>
+                        <input type="number" id="others_ncc" value="0" oninput="calculate()">
+                    </div>
+                    <div class="input-row">
+                        <div class="label-group">
+                            <span class="label-main">유상 상담 매출</span>
+                            <span class="label-sub">금액 입력 (÷5000)</span>
+                        </div>
+                        <input type="number" id="others_sr_amount" value="0" oninput="calculate()">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card">
+            <div class="card-header">
+                <div class="card-title">CSAT 등급</div>
+                <button class="reset-btn" onclick="resetCSAT()">초기화</button>
+            </div>
+            <div class="input-list">
+                <div class="input-row">
+                    <span class="label-main">센터 점수</span>
+                    <input type="number" id="center_csat" value="0" max="100" step="0.1" oninput="calculate()">
+                </div>
+                <div class="input-row">
+                    <span class="label-main">개인 점수 <span class="badge required">90 필수</span></span>
+                    <input type="number" id="indiv_csat" value="0" max="100" step="0.1" oninput="calculate()">
+                </div>
+            </div>
+        </div>
+
+        <div class="section-card result-card">
+            
+            <div style="display:flex; justify-content:space-between; margin-bottom:20px; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,0.3);">
+                <div>
+                    <div style="font-size:12px; color:rgba(255,255,255,0.9); margin-bottom:4px;">총 포인트 (목표 800)</div>
+                    <div style="font-size:20px; font-weight:700;" id="total_points">0 점</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:12px; color:rgba(255,255,255,0.9); margin-bottom:4px;">CSAT 등급</div>
+                    <div style="font-size:20px; font-weight:700; color:#FFF9C4;" id="csat_grade_text">미달</div>
+                    <div class="csat-subtext" id="csat_incentive_subtext">0 원</div>
+                </div>
+            </div>
+
+            <div class="result-row">
+                <span>기본 급여 (월)</span>
+                <span id="val_base_salary">0 원</span>
+            </div>
+            <div class="result-row">
+                <span>연장 수당</span>
+                <span id="val_overtime">0 원</span>
+            </div>
+            <div class="result-row">
+                <span class="highlight">총 인센티브</span>
+                <span class="highlight" id="val_incentive">0 원</span>
+            </div>
+
+            <div class="result-row total">
+                <span>예상 수령액</span>
+                <span class="big-number" id="val_grand_total">0</span>
+            </div>
+            <div style="text-align:right; font-size:14px; margin-top:5px; opacity:0.8;">(세전 기준)</div>
+        </div>
+
+    </div>
+
+    <script>
+        const POINTS = {
+            MAC: { OWR: 21, IWR: 10, NCC: 1.5 },
+            OTHERS: { OWR: 7, IWR: 3, NCC: 0.5 }
+        };
+        const TARGET_SCORE = 800;
+        const INCENTIVE_PER_POINT = 1000;
+
+        function resetSalary() {
+            document.getElementById('annual_salary').value = "";
+            document.getElementById('overtime_pay').value = "0";
+            calculate();
+        }
+
+        function resetIncentives() {
+            ['mac_owr', 'mac_iwr', 'mac_ncc', 'mac_sr_amount', 'others_owr', 'others_iwr', 'others_ncc', 'others_sr_amount']
+            .forEach(id => document.getElementById(id).value = "0");
+            calculate();
+        }
+
+        function resetCSAT() {
+            document.getElementById('center_csat').value = "0";
+            document.getElementById('indiv_csat').value = "0";
+            calculate();
+        }
+
+        function calculate() {
+            // 1. 급여
+            const annualSalary = parseFloat(document.getElementById('annual_salary').value) || 0;
+            const monthlyBase = Math.floor(annualSalary / 12);
+            const overtimePay = parseFloat(document.getElementById('overtime_pay').value) || 0;
+
+            document.getElementById('monthly_salary_preview').innerText = monthlyBase > 0 ? `월 ${monthlyBase.toLocaleString()} 원` : "월 0 원";
+
+            // 2. 실적
+            const macOwr = parseFloat(document.getElementById('mac_owr').value) || 0;
+            const macIwr = parseFloat(document.getElementById('mac_iwr').value) || 0;
+            const macNcc = parseFloat(document.getElementById('mac_ncc').value) || 0;
+            const macSr = (parseFloat(document.getElementById('mac_sr_amount').value) || 0) / 5000;
+
+            const othersOwr = parseFloat(document.getElementById('others_owr').value) || 0;
+            const othersIwr = parseFloat(document.getElementById('others_iwr').value) || 0;
+            const othersNcc = parseFloat(document.getElementById('others_ncc').value) || 0;
+            const othersSr = (parseFloat(document.getElementById('others_sr_amount').value) || 0) / 5000;
+
+            const totalPoints = (macOwr * POINTS.MAC.OWR) + (macIwr * POINTS.MAC.IWR) + (macNcc * POINTS.MAC.NCC) + macSr +
+                                (othersOwr * POINTS.OTHERS.OWR) + (othersIwr * POINTS.OTHERS.IWR) + (othersNcc * POINTS.OTHERS.NCC) + othersSr;
+            
+            const formattedPoints = Math.round(totalPoints * 10) / 10;
+            document.getElementById('total_points').innerText = formattedPoints.toLocaleString() + " 점";
+
+            let perfIncentive = 0;
+            if (formattedPoints >= TARGET_SCORE) {
+                perfIncentive = Math.floor((formattedPoints - TARGET_SCORE) * INCENTIVE_PER_POINT);
+            }
+
+            // 3. CSAT
+            const centerCsat = parseFloat(document.getElementById('center_csat').value) || 0;
+            const indivCsat = parseFloat(document.getElementById('indiv_csat').value) || 0;
+            let csatIncentive = 0;
+            let csatText = "미달";
+
+            if (indivCsat >= 90) {
+                if (centerCsat >= 95) { csatIncentive = 70000; csatText = "S"; }
+                else if (centerCsat >= 94) { csatIncentive = 60000; csatText = "A"; }
+                else if (centerCsat >= 93) { csatIncentive = 50000; csatText = "B"; }
+                else if (centerCsat >= 92) { csatIncentive = 30000; csatText = "C"; }
+                else if (centerCsat >= 90) { csatIncentive = 10000; csatText = "D"; }
+            } else if (indivCsat > 0) {
+                csatText = "Fail";
+            }
+            document.getElementById('csat_grade_text').innerText = csatText;
+            
+            // 금액 표기
+            document.getElementById('csat_incentive_subtext').innerText = csatIncentive > 0 ? `+${csatIncentive.toLocaleString()} 원` : "0 원";
+
+            // 4. 합계
+            const totalIncentive = perfIncentive + csatIncentive;
+            const grandTotal = monthlyBase + overtimePay + totalIncentive;
+
+            document.getElementById('val_base_salary').innerText = monthlyBase.toLocaleString() + " 원";
+            document.getElementById('val_overtime').innerText = overtimePay.toLocaleString() + " 원";
+            document.getElementById('val_incentive').innerText = totalIncentive.toLocaleString() + " 원";
+            document.getElementById('val_grand_total').innerText = grandTotal.toLocaleString();
+        }
+    </script>
+</body>
+</html>
